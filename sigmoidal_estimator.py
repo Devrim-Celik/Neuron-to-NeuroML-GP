@@ -1,12 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas
+import pandas as pd
 from auxiliary import unpack
 
 class Sigmoidal_Estimator():
 
-    def __init__(self, name, group, trace):
+    def __init__(self, name, ion_type, group, trace):
         self.name = name
+        self.ion_type = ion_type
         self.group = group
         self.trace = trace
 
@@ -18,7 +19,7 @@ class Sigmoidal_Estimator():
     # master function
     def routine(self):
         # added bias for negative function
-        b_dict = {"PS": 0, "NS": 1}
+        b_dict = {"PS": 0, "NS": np.max(self.trace)}
         self.b = b_dict[self.group]
         # calculate parameters
         self.rate_est()
@@ -26,6 +27,9 @@ class Sigmoidal_Estimator():
         self.scale_est()
         # plotting
         #self.plot()
+
+
+        self.RMSE()
 
         if (self.rmse > 2):
             print("[!] Model({}) has RMSE of {}, please check!".format(self.name, self.rmse))
@@ -79,7 +83,7 @@ class Sigmoidal_Estimator():
         translated = self.calculate_values()
 
         plt.figure(figsize=(20,10))
-        plt.title(self.name+ "\nRMSE = " + str(self.rmse) + " Group: " + self.group)
+        plt.title(self.name+ "\nRMSE = " + str(self.rmse) + " Group: " + self.group + " M: " + str(self.midpoint) + "R: " + str(self.rate) + " S " +  str(self.scale))
         plt.plot(self.V, self.trace, label="Simulation Trace", color="k", linewidth=4)
         plt.plot(self.V, translated, label="Translated Trace", color="r", linestyle="--")
         plt.legend()
@@ -114,10 +118,37 @@ class Sigmoidal_Estimator():
 
 if (__name__=="__main__"):
     # extract all necessary datapoints
-    names, groups, traces = unpack()
+    names, ion_types, groups, traces = unpack()
 
-    for name, group, trace in zip(names, groups, traces):
+    # TODO do it for all
+    # for group F --> just constant value as property
+    # for G --> Gaussian fit with properties : mean, variance, factor (a*(...))
+
+    analysis_df = pd.DataFrame(index=range(len(traces)), \
+        columns=["Name", "Type", "Group", "Trace", "Rate", \
+            "Midpoint", "Scale", "RMSE"])
+
+    iterator = 0
+    for name, ion_type, group, trace in zip(names, ion_types, groups, traces):
 
         if (group == "PS" or group == "NS"):
-            SE = Sigmoidal_Estimator(name, group, trace)
-            SE.routine()
+            SE = Sigmoidal_Estimator(name, ion_type, group, trace)
+            rate, midpoint, scale = SE.routine()
+
+
+            analysis_df.loc[iterator]["Name"] = name
+            analysis_df.loc[iterator]["Type"] = ion_type
+            analysis_df.loc[iterator]["Group"] = group
+            analysis_df.loc[iterator]["Trace"] = trace
+            analysis_df.loc[iterator]["Rate"] = rate
+            analysis_df.loc[iterator]["Midpoint"] = midpoint
+            analysis_df.loc[iterator]["Scale"] = scale
+
+            if SE.rmse > 2:
+                analysis_df.loc[iterator]["RMSE"] = 2
+            else:
+                analysis_df.loc[iterator]["RMSE"] = SE.rmse
+
+            iterator += 1
+
+    analysis_df.to_pickle("data/analysis_df.pickle")
