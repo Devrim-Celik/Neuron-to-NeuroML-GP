@@ -20,12 +20,13 @@ def unpack(file_name="extraced_df.pickle"):
     # extract all necessary datapoints
     df = pd.read_pickle("./data/extracted_df.pickle")
 
-    return df["Name"], df["Group"], trace_to_np(df["Trace"])
+    return df["Name"], df["Type"], df["Group"], trace_to_np(df["Trace"])
 
 
 
-def save_fig(name, group, trace, time):
+def save_fig(name, ion_type, group, trace):
 
+    time = np.arange(-150, 151, 5)
     # remove parent directory
     # remove ending
     # remove instances of "/"
@@ -35,14 +36,14 @@ def save_fig(name, group, trace, time):
     plt.figure()
     plt.plot(time, trace)
     # title
-    plt.title("Name: " + name + "\n Group: " + str(group) + "\n Difference: " + str(trace[-1]-trace[0]))
+    plt.title("Name: " + name + "\n Group: " + str(group) + " Type: " + ion_type)
     # save in group folder for better manual analysis
-    plt.savefig("plots/"+group+"/"+name+".png")
+    plt.savefig("plots/"+group+"/"+ion_type+"/"+name+".png")
 
 
 
 
-def generate_plots(names, groups, traces):
+def generate_plots(names, types, groups, traces):
     time = np.arange(-150, 151, 5)
 
     # check if group folder exist, if not create them
@@ -52,7 +53,7 @@ def generate_plots(names, groups, traces):
             os.makedirs(folder)
 
     for nr in range(traces.shape[0]):
-        save_fig(names[nr], groups[nr], traces[nr], time)
+        save_fig(names[nr], types[nr], groups[nr], traces[nr], time)
 
 
 
