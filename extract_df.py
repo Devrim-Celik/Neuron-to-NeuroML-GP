@@ -8,8 +8,7 @@ def get_gate_values(directory="./raw_data"):
     # get list with paths to all folders in the current directory
     folder_list = [x[0] for x in os.walk(directory) if ".mod" in x[0]]
 
-
-    total_df = pd.DataFrame(index=range(0,10000), columns=["Name", "Group", "Trace"])
+    total_df = pd.DataFrame(index=range(0,10000), columns=["Name", "Type", "Group", "Trace"])
     index_counter = 0
 
     # look into every folder in the list, check if there is a file which
@@ -54,12 +53,26 @@ def get_gate_values(directory="./raw_data"):
                             else:
                                 group = "F"
 
-                        # add values to dataframe
-                        total_df.loc[index_counter]["Name"] = name
-                        total_df.loc[index_counter]["Group"] = group
-                        total_df.loc[index_counter]["Trace"] = pd.Series([data])
+                        # find out which ion type
+                        if "/K/" in name:
+                            type_ion = "K"
+                        elif "/Na/" in name:
+                            type_ion = "Na"
+                        elif "/Ca/" in name:
+                            type_ion = "Ca"
+                        else:
+                            print("[-] Type not found")
 
-                        index_counter += 1
+                        if not np.isnan(data).any():
+                            # add values to dataframe
+                            total_df.loc[index_counter]["Name"] = name
+                            total_df.loc[index_counter]["Type"] = type_ion
+                            total_df.loc[index_counter]["Group"] = group
+                            total_df.loc[index_counter]["Trace"] = pd.Series([data])
+
+
+
+                            index_counter += 1
 
     # since there wasnt another way that give more indexes than we need
     # at the start, of dynamically locating them, remove all empty rows
