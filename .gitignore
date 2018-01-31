@@ -3,3 +3,4 @@ __pycache__
 *.pickle
 *.mod
 .DS_Store
+show
