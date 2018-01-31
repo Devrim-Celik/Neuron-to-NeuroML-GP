@@ -16,11 +16,28 @@ def trace_to_np(trace_series):
 
 
 
-def unpack(file_name="extraced_df.pickle"):
+def unpack(file_name="extraced_df.pickle", only_sig=True, return_df=False):
     # extract all necessary datapoints
     df = pd.read_pickle("./data/extracted_df.pickle")
 
-    return df["Name"], df["Type"], df["Group"], trace_to_np(df["Trace"])
+    if only_sig:
+        df = df[(df['Group']=="PS") | (df['Group']=="NS")]
+        df.index = range(len(df[(df['Group']=="PS") | (df['Group']=="NS")]))
+
+    # filter out outliers
+    to_drop = []
+    for nr, element in enumerate(df["Trace"]):
+
+        if (max(element[0][0])>1) or (min(element[0][0])<0):
+            #to_drop.append(nr)
+            df = df.drop(df.index[[nr]])
+    #df = df.drop(df.index[to_drop])
+    df.index = range(len(df))
+
+    if return_df:
+        return df
+    else:
+        return df["Name"], df["Type"], df["Group"], trace_to_np(df["Trace"])
 
 
 
@@ -55,8 +72,6 @@ def generate_plots(names, types, groups, traces):
     for nr in range(traces.shape[0]):
         save_fig(names[nr], types[nr], groups[nr], traces[nr], time)
 
-
-
-
 if __name__=="__main__":
-    generate_plots()
+    a,b,c,d = unpack()
+    generate_plots(a,b,c,d)
