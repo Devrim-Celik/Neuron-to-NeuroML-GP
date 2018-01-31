@@ -27,11 +27,9 @@ def unpack(file_name="extraced_df.pickle", only_sig=True, return_df=False):
     # filter out outliers
     to_drop = []
     for nr, element in enumerate(df["Trace"]):
-
         if (max(element[0][0])>1) or (min(element[0][0])<0):
-            #to_drop.append(nr)
-            df = df.drop(df.index[[nr]])
-    #df = df.drop(df.index[to_drop])
+            to_drop.append(nr)
+    df = df.drop(df.index[to_drop])
     df.index = range(len(df))
 
     if return_df:
@@ -71,6 +69,8 @@ def generate_plots(names, types, groups, traces):
 
     for nr in range(traces.shape[0]):
         save_fig(names[nr], types[nr], groups[nr], traces[nr], time)
+
+
 
 if __name__=="__main__":
     a,b,c,d = unpack()
