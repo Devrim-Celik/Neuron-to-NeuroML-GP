@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from auxiliary import unpack
 
 def analysis(file_path="data/analysis_df.pickle"):
     """
@@ -10,7 +11,7 @@ def analysis(file_path="data/analysis_df.pickle"):
     """
 
     # read data
-    df = pd.read_pickle(file_path)
+    df = unpack(return_df=True)
     # open figure
     plt.figure("Comparison Sigmoidal", figsize=(20,10))
     plt.title("Comparison Sigmoidal")
