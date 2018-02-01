@@ -1,7 +1,8 @@
 __pycache__
 .DS_Store
 show
+NOTES.txt
+data/removed.txt
 *.png
 *.pickle
 *.mod
-*.txt
