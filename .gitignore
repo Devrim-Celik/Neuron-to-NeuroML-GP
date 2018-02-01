@@ -1,6 +1,7 @@
 __pycache__
+.DS_Store
+show
 *.png
 *.pickle
 *.mod
-.DS_Store
-show
+*.txt
