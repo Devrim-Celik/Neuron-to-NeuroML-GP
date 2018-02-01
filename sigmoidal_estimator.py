@@ -1,16 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from auxiliary import unpack
+from auxiliary import unpack, write_exception
 
 class Sigmoidal_Estimator():
 
-    def __init__(self, name, ion_type, group, trace):
+    def __init__(self, name, ion_type, group, trace, show_problems=True):
         self.name = name
         self.ion_type = ion_type
         self.group = group
         self.trace = trace
         self.V = np.arange(-150, 151, 5)
+        self.sp = show_problems
 
     # master function
     def routine(self):
@@ -25,7 +26,9 @@ class Sigmoidal_Estimator():
         # check for outliers, probably non sigmoidal shaped
         if (self.rmse > 0.1):
             print("[!] Model({}) has RMSE of {}; it will be removed!".format(self.name, self.rmse))
-            self.plot()
+            write_exception(self.name, 2)
+            if (self.sp):
+                self.plot()
             return None, None, None
 
         return self.rate, self.midpoint, self.scale
@@ -119,7 +122,7 @@ class Sigmoidal_Estimator():
 
 
 
-if (__name__=="__main__"):
+def generate_analysis_df(show_problems=True):
     # extract all necessary datapoints
     names, ion_types, groups, traces = unpack()
     # create dataframe to collect all information
@@ -132,7 +135,7 @@ if (__name__=="__main__"):
         # filter out non sigmoidal
         if (group == "PS" or group == "NS"):
             # get parameters for gate
-            SE = Sigmoidal_Estimator(name, ion_type, group, trace)
+            SE = Sigmoidal_Estimator(name, ion_type, group, trace, show_problems)
             rate, midpoint, scale = SE.routine()
             # if flawed value, dont include
             if not (rate == None and midpoint == None and scale == None):
@@ -149,3 +152,6 @@ if (__name__=="__main__"):
                 iterator += 1
     # save
     analysis_df.to_pickle("data/analysis_df.pickle")
+
+if (__name__=="__main__"):
+    generate_analysis_df()
