@@ -10,24 +10,15 @@ class Sigmoidal_Estimator():
         self.ion_type = ion_type
         self.group = group
         self.trace = trace
-
-        self.b = 0 # notfall, fall ich hoch oder runter muss
-
         self.V = np.arange(-150, 151, 5)
-
-
 
     # master function
     def routine(self):
-        # added bias for negative function
-        b_dict = {"PS": 0, "NS": np.max(self.trace)}
-        self.b = b_dict[self.group]
         # calculate parameters
         self.rate_est()
         self.midpoint_est()
         self.scale_est()
-        # plotting
-        #self.plot()
+
         # calculate RMSE
         self.RMSE()
 
@@ -43,25 +34,23 @@ class Sigmoidal_Estimator():
 
     # calculate rate variable
     def rate_est(self):
-        # check for "squishness"
+        # check for "squisyhness", how far max and min are
         self.max_val = np.max(self.trace)
         self.min_val = np.min(self.trace)
 
         if self.group == "PS":
             self.rate = (self.max_val-self.min_val)
-            self.b = self.min_val
+            self.b = self.min_val # bias
         elif self.group == "NS":
             self.rate = -(self.max_val-self.min_val)
-            self.b = self.max_val
+            self.b = self.max_val # bias
 
 
 
     # calculate midpoint variable
     def midpoint_est(self):
-        max_val = np.max(self.trace)
-        min_val = np.min(self.trace)
-
-        midpoint_value = (max_val-min_val)/2 + self.min_val
+        # find value in the middle of the y value interval
+        midpoint_value = (self.max_val-self.min_val)/2 + self.min_val
 
         # find corresponding voltage value
         idx = (np.abs(self.trace-midpoint_value)).argmin()
@@ -69,18 +58,19 @@ class Sigmoidal_Estimator():
 
 
 
-    # calculate scale variable by testing different value of scale
+    # calculate scale variable by testing different value of scale and finding
+    # optimum
     def scale_est(self):
         # scale, rmse
         minimum = [1, 1000]
-
-        # iterate, try
+        # iterate, try to find better scale
         for scale in range(1, 50):
             self.scale = scale
             self.RMSE()
-            # in case rmse is smaller
+            # in case rmse is smaller we found ourselves a better model
             if self.rmse < minimum[1]:
                 minimum = scale, self.rmse
+
         self.scale = minimum[0]
 
 
@@ -106,7 +96,7 @@ class Sigmoidal_Estimator():
 
 
 
-    # return list of values over self.V
+    # return list of values over self.V with our extraced parameters
     def calculate_values(self):
         translated = []
         for V in self.V:
@@ -132,23 +122,21 @@ class Sigmoidal_Estimator():
 if (__name__=="__main__"):
     # extract all necessary datapoints
     names, ion_types, groups, traces = unpack()
-
-    # TODO do it for all
-    # for group F --> just constant value as property
-    # for G --> Gaussian fit with properties : mean, variance, factor (a*(...))
-
+    # create dataframe to collect all information
     analysis_df = pd.DataFrame(index=range(len(traces)), \
         columns=["Name", "Type", "Group", "Trace", "Rate", \
             "Midpoint", "Scale", "RMSE"])
 
     iterator = 0
     for name, ion_type, group, trace in zip(names, ion_types, groups, traces):
-
+        # filter out non sigmoidal
         if (group == "PS" or group == "NS"):
+            # get parameters for gate
             SE = Sigmoidal_Estimator(name, ion_type, group, trace)
             rate, midpoint, scale = SE.routine()
             # if flawed value, dont include
             if not (rate == None and midpoint == None and scale == None):
+                # add channel to dataframe
                 analysis_df.loc[iterator]["Name"] = name
                 analysis_df.loc[iterator]["Type"] = ion_type
                 analysis_df.loc[iterator]["Group"] = group
@@ -159,5 +147,5 @@ if (__name__=="__main__"):
                 analysis_df.loc[iterator]["RMSE"] = SE.rmse
 
                 iterator += 1
-
+    # save
     analysis_df.to_pickle("data/analysis_df.pickle")
