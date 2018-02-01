@@ -1,4 +1,6 @@
-from auxiliary import trace_to_np
+from auxiliary import unpack, generate_plots
 from extract_df import get_gate_values
-from sigmoidal_estimator import Sigmoidal_Estimator
+from sigmoidal_estimator import Sigmoidal_Estimator, generate_analysis_df
 from dim_reduction import dim_reduction
+from analysis import analysis
+from generate_property_lines_for_gates import generate_sigmoidal_properties
