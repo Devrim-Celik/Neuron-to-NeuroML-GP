@@ -1,0 +1,8 @@
+bokeh==0.12.13
+matplotlib==2.1.1
+mpldatacursor==0.6.2
+numpy==1.14.0
+pandas==0.22.0
+pickleshare==0.7.4
+sklearn==0.0
+tsne.bh-sne==0.1.7+5.g3aeafd5
