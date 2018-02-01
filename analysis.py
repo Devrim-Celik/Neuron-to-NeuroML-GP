@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from auxiliary import unpack
 
-def analysis(file_path="data/analysis_df.pickle"):
+def analysis(file_path="data/analysis_df.pickle", show_plot=True):
     """
     creating a histogram plot with (nr_types*4) subplots. Each row will stand
     for a type of ion, each calumn either for a parameters or the rmse error.
@@ -99,7 +99,8 @@ def analysis(file_path="data/analysis_df.pickle"):
 
     plt.tight_layout()
     plt.savefig("./plots/sigmoidal_parameters_comparison.png")
-    plt.show()
+    if show_plot:
+        plt.show()
 
 
 if (__name__=="__main__"):
